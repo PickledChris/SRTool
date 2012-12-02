@@ -1,0 +1,4 @@
+(set-logic QF_BV)
+(define-fun tobv32 ((p Bool)) (_ BitVec 32) (ite p (_ bv1 32) (_ bv0 32)))
+(check-sat)
+
