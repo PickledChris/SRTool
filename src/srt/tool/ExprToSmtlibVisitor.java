@@ -57,23 +57,25 @@ public class ExprToSmtlibVisitor extends DefaultVisitor {
 			case BinaryExpr.NEQUAL:
 				break;
 			case BinaryExpr.EQUAL:
+				operator = "(= %s %s)";
 				break;
 			default:
 				throw new IllegalArgumentException("Invalid binary operator");
 		}
-		
+		Expr debug = expr.getLhs();
+		String visited = visit(debug);
 		return String.format(operator, visit(expr.getLhs()), visit(expr.getRhs()));
 		
 	}
 
 	@Override
 	public String visit(DeclRef declRef) {
-		return null;
+		return declRef.getName();
 	}
 
 	@Override
 	public String visit(IntLiteral intLiteral) {
-		return null;
+		return (String.format("(_ bv%s 32)",Integer.toString(intLiteral.getValue())));
 	}
 
 	@Override
