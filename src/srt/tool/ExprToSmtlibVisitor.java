@@ -23,38 +23,54 @@ public class ExprToSmtlibVisitor extends DefaultVisitor {
 				operator = "(bvadd %s %s)";
 				break;
 			case BinaryExpr.BAND:
+				operator = "(bvand %s %s)";
 				break;
 			case BinaryExpr.BOR:
+				operator = "(bvor %s %s)";
 				break;
 			case BinaryExpr.BXOR:
+				operator = "(bvxor %s %s)";
 				break;
 			case BinaryExpr.DIVIDE:
+				operator = "(bvudiv %s %s)";
 				break;
 			case BinaryExpr.LSHIFT:
+				operator = "(bvshl %s %s)";
 				break;
 			case BinaryExpr.MOD:
+				operator = "(bvsmod %s %s)";
 				break;
 			case BinaryExpr.MULTIPLY:
+				operator = "(bvmul %s %s)";
 				break;
 			case BinaryExpr.RSHIFT:
+				operator = "(bvashr %s %s)";
 				break;
 			case BinaryExpr.SUBTRACT:
+				operator = "(bvsub %s %s)";
 				break;
 				
-			case BinaryExpr.LAND:
+			case BinaryExpr.LAND: // possibly broken
+				operator = "(tobool (bvand %s %s))";
 				break;
-			case BinaryExpr.LOR:
+			case BinaryExpr.LOR: // possibly broken
+				operator = "(tobool (bvor %s %s))";
 				break;
 			
 			case BinaryExpr.GEQ:
+				operator = "(tobv32 ((bvsge %s %s))";
 				break;
 			case BinaryExpr.GT:
+				operator = "(tobv32 ((bvsgt %s %s))";
 				break;
 			case BinaryExpr.LEQ:
+				operator = "(tobv32 ((bvsle %s %s))";
 				break;
 			case BinaryExpr.LT:
+				operator = "(tobv32 ((bvslt %s %s))";
 				break;
 			case BinaryExpr.NEQUAL:
+				operator = "(tobv32 (not (= %s %s)))";
 				break;
 			case BinaryExpr.EQUAL:
 				operator = "(tobv32 (= %s %s))";
@@ -89,11 +105,14 @@ public class ExprToSmtlibVisitor extends DefaultVisitor {
 		case UnaryExpr.UMINUS:
 			operator = "(bvneg %s)";
 			break;
-		case UnaryExpr.UPLUS:
+		case UnaryExpr.UPLUS: // possibly broken
+			operator = "(%s)";
 			break;
-		case UnaryExpr.LNOT:
+		case UnaryExpr.LNOT: // possibly broken
+			operator = "(not (bvnot %s))";
 			break;
 		case UnaryExpr.BNOT:
+			operator = "(bvnot %s)";
 			break;
 		default:
 			throw new IllegalArgumentException("Invalid binary operator");
