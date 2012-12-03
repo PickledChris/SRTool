@@ -20,7 +20,8 @@ public class SMTLIBConverter {
 		
 		exprConverter = new ExprToSmtlibVisitor();
 		query = new StringBuilder("(set-logic QF_BV)\n" +
-				"(define-fun tobv32 ((p Bool)) (_ BitVec 32) (ite p (_ bv1 32) (_ bv0 32)))\n");
+				"(define-fun tobv32 ((p Bool)) (_ BitVec 32) (ite p (_ bv1 32) (_ bv0 32)))\n" +
+				"(define-fun tobool ((q (_ BitVec 32))) (Bool) (ite (= q (_ bv1 32)) true false))\n");
 		// TODO: Define more functions above (for convenience), as needed.
 		
 		
@@ -31,11 +32,11 @@ public class SMTLIBConverter {
 		}
 		
 		for (Expr expr : transitionExprs) {
-			query.append("(assert" + exprConverter.visit(expr)+ ")\n");
+			query.append("(assert (tobool " + exprConverter.visit(expr)+ "))\n");
 		}
 		
 		for (Expr expr : propertyExprs) {
-			query.append("(assert" + exprConverter.visit(expr)+ ")\n");
+			query.append("(assert (tobool " + exprConverter.visit(expr)+ "))\n");
 		}
 		
 		query.append("(check-sat)\n");
