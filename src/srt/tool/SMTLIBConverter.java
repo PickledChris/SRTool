@@ -28,16 +28,16 @@ public class SMTLIBConverter {
 		
 		// TODO: Declare variables, add constraints, add properties to check
 		// here.
+		// Declare each variable as a bit vector
 		for (String variable : variableNames) {
 			query.append(String.format("(declare-fun %s () (_ BitVec 32))\n", variable));
 		}
 		
 		for (Expr expr : transitionExprs) {
-			query.append("(assert (tobool " + exprConverter.visit(expr)+ "))\n");
+			query.append(assertion(exprConverter.visit(expr)));
 		}
-		
 		for (Expr expr : propertyExprs) {
-			query.append("(assert (tobool " + exprConverter.visit(expr)+ "))\n");
+			query.append(assertion(exprConverter.visit(expr)));
 		}
 		
 		// At least one can fail
@@ -65,7 +65,11 @@ public class SMTLIBConverter {
 		for (Expr expr : propertyExprs) {
 			negatedOr = or(negatedOr, negatedExpr(expr));
 		}
-		return String.format("(assert (tobool %s))\n", negatedOr);
+		return assertion(negatedOr);
+	}
+
+	private String assertion(String condition) {
+		return String.format("(assert (tobool %s))\n", condition);
 	}
 	
 	private String negatedExpr(Expr expr) {
