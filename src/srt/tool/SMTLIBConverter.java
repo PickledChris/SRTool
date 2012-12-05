@@ -1,6 +1,7 @@
 package srt.tool;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -39,6 +40,9 @@ public class SMTLIBConverter {
 			query.append("(assert (tobool " + exprConverter.visit(expr)+ "))\n");
 		}
 		
+		// At least one can fail
+		query.append(atLeastOneQueryCanFail(transitionExprs, propertyExprs));
+		
 		query.append("(check-sat)\n");
 		
 	}
@@ -51,6 +55,25 @@ public class SMTLIBConverter {
 		List<Integer> res = new ArrayList<Integer>();
 		
 		return res;
+	}
+	
+	private String atLeastOneQueryCanFail(Collection<Expr> transitionExprs, Collection<Expr> propertyExprs) {
+		String negatedOr = "";
+		for (Expr expr : transitionExprs) {
+			negatedOr = or(negatedOr, negatedExpr(expr));
+		}
+		for (Expr expr : propertyExprs) {
+			negatedOr = or(negatedOr, negatedExpr(expr));
+		}
+		return String.format("(assert (tobool %s))\n", negatedOr);
+	}
+	
+	private String negatedExpr(Expr expr) {
+		return String.format("(bvnot %s)", exprConverter.visit(expr));
+	}
+	
+	private String or(String lhs, String rhs) {
+		return String.format("(bvor %s %s)", lhs, rhs);
 	}
 	
 }
