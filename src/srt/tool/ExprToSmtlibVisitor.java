@@ -99,7 +99,10 @@ public class ExprToSmtlibVisitor extends DefaultVisitor {
 
 	@Override
 	public String visit(TernaryExpr ternaryExpr) {
-		return null;
+        return String.format("(ite (tobool %s) %s %s)",
+                visit(ternaryExpr.getCondition()),
+                visit(ternaryExpr.getTrueExpr()),
+                visit(ternaryExpr.getFalseExpr()));
 	}
 
 	@Override
