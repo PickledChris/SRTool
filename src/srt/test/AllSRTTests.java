@@ -36,6 +36,10 @@ public class AllSRTTests {
 		clargs.abstractLoops = true;
 		tests.addTest(getTestsInDir("testloopabs", clargs));
 		*/
+		
+		//Shared tests
+		tests.addTest(getTestsInDir("test_shared", clargs));
+		
 		return tests;
 	}
 
