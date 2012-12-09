@@ -8,7 +8,7 @@ void main(int a, int b)
     }
     else
     {
-        c = b
+        c = b;
     }
 
     assert (c <= b && c <= a);
