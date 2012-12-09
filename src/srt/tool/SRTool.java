@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.antlr.runtime.RecognitionException;
-import org.antlr.runtime.tree.Tree;
 
 import srt.ast.Program;
 import srt.ast.visitor.impl.Checker;
@@ -13,7 +12,7 @@ import srt.ast.visitor.impl.MakeBlockVisitor;
 import srt.ast.visitor.impl.PrinterVisitor;
 import srt.exec.SMTQuery;
 import srt.parser.SimpleCParserUtil;
-import srt.tool.exception.CheckerExpception;
+import srt.tool.exception.CheckerException;
 import srt.tool.exception.SMTSolverTimeoutException;
 import srt.tool.exception.UnknownResultException;
 
@@ -29,7 +28,7 @@ public class SRTool {
 	}
 
 	public List<AssertionFailure> go() throws IOException,
-			RecognitionException, CheckerExpception, InterruptedException,
+			RecognitionException, CheckerException, InterruptedException,
 			SMTSolverTimeoutException, UnknownResultException {
 		// We will return a list of assertions that can fail.
 		List<AssertionFailure> result = new ArrayList<AssertionFailure>();
@@ -47,7 +46,7 @@ public class SRTool {
 		Checker checker = new Checker();
 		boolean success = checker.check(p);
 		if (!success) {
-			throw new CheckerExpception(checker.getCheckerError());
+			throw new CheckerException(checker.getCheckerError());
 		}
 
 		// TODO: Transform program using Visitors here.
@@ -101,7 +100,7 @@ public class SRTool {
 		} else if (!queryResult.startsWith("unsat")) {
 			throw new UnknownResultException();
 		}
-		
+
 		return result;
 	}
 }

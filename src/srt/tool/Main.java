@@ -6,7 +6,7 @@ import java.util.List;
 import org.antlr.runtime.RecognitionException;
 
 import srt.parser.SimpleCLexer;
-import srt.tool.exception.CheckerExpception;
+import srt.tool.exception.CheckerException;
 import srt.tool.exception.SMTSolverTimeoutException;
 import srt.tool.exception.UnknownResultException;
 
@@ -22,7 +22,7 @@ public class Main {
 	 */
 	public static void main(String[] args) throws IOException,
 			RecognitionException, InterruptedException {
-		
+
 		// Parse command line args.
 		CLArgs clArgs = new CLArgs();
 		JCommander jcommander = new JCommander(clArgs, args);
@@ -31,9 +31,9 @@ public class Main {
 			jcommander.usage();
 			return;
 		}
-		
+
 		String inputFile = clArgs.files.get(0);
-		
+
 		SRTool tool = new SRTool(inputFile, clArgs);
 		try {
 			List<AssertionFailure> assertionFailures = tool.go();
@@ -62,7 +62,7 @@ public class Main {
 									+ "no assertions can fail.");
 				}
 			}
-		} catch (CheckerExpception e) {
+		} catch (CheckerException e) {
 			System.err.println(e.getCheckerError().message);
 			System.exit(1);
 		} catch (SMTSolverTimeoutException e) {
@@ -73,7 +73,7 @@ public class Main {
 			System.exit(3);
 		}
 
-		
+
 	}
 
 }
