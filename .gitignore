@@ -1,0 +1,5 @@
+queryIn.txt
+queryOut.txt
+*.iml
+.idea/
+out
