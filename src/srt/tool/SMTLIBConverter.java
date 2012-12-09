@@ -56,7 +56,7 @@ public class SMTLIBConverter {
 		query.append(atLeastOneQueryCanFail(transitionExprs, propertyExprs));
 
 		query.append("(check-sat)\n");
-		query.append(String.format("(get-value (%s))", allPropositions()));
+		//query.append(String.format("(get-value (%s))", allPropositions()));
 
         System.out.println(query);
 	}
