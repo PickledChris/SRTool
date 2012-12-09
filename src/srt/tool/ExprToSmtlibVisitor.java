@@ -58,7 +58,7 @@ public class ExprToSmtlibVisitor extends DefaultVisitor {
 				break;
 
 			case BinaryExpr.GEQ:
-				operator = "(tobv32 (bvsge %s %s)";
+				operator = "(tobv32 (bvsge %s %s))";
 				break;
 			case BinaryExpr.GT:
 				operator = "(tobv32 (bvsgt %s %s))";
