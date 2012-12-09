@@ -50,11 +50,11 @@ public class ExprToSmtlibVisitor extends DefaultVisitor {
 				operator = "(bvsub %s %s)";
 				break;
 
-			case BinaryExpr.LAND: //(x bvand y) ! = 0 converts nonzero to 1
-				operator = "(tobv32 (not (= (bvand %s %s) 0)))";
+			case BinaryExpr.LAND: //(x bvand y) != 0 converts nonzero to 1
+				operator = "(tobv32 (not (= (bvand %s %s) (_ bv0 32))))";
 				break;
-			case BinaryExpr.LOR: // (x bvor y) ! = 0 converts nonzero to 1
-				operator = "(tobv32 (not (= (bvor %s %s) 0)))";
+			case BinaryExpr.LOR: // (x bvor y) != 0 converts nonzero to 1
+				operator = "(tobv32 (not (= (bvor %s %s) (_ bv0 32))))";
 				break;
 
 			case BinaryExpr.GEQ:
