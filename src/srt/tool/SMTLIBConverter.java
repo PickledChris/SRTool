@@ -8,55 +8,55 @@ import java.util.Set;
 import srt.ast.Expr;
 
 public class SMTLIBConverter {
-	
+
 	private ExprToSmtlibVisitor exprConverter;
 	private StringBuilder query;
-	
+
 	public SMTLIBConverter(Set<String> variableNames, List<Expr> transitionExprs, List<Expr> propertyExprs) {
-		
+
 		if(propertyExprs.size() == 0)
 		{
 			throw new IllegalArgumentException("No assertions.");
 		}
-		
+
 		exprConverter = new ExprToSmtlibVisitor();
 		query = new StringBuilder("(set-logic QF_BV)\n" +
 				"(define-fun tobv32 ((p Bool)) (_ BitVec 32) (ite p (_ bv1 32) (_ bv0 32)))\n" +
-				"(define-fun tobool ((q (_ BitVec 32))) (Bool) (ite (= q (_ bv1 32)) true false))\n");
+                    "(define-fun tobool ((x (_ BitVec 32))) (Bool) (= x (_ bv1 32)))\n");
 		// TODO: Define more functions above (for convenience), as needed.
-		
-		
+
+
 		// TODO: Declare variables, add constraints, add properties to check
 		// here.
 		// Declare each variable as a bit vector
 		for (String variable : variableNames) {
 			query.append(String.format("(declare-fun %s () (_ BitVec 32))\n", variable));
 		}
-		
+
 		for (Expr expr : transitionExprs) {
 			query.append(assertion(exprConverter.visit(expr)));
 		}
 		for (Expr expr : propertyExprs) {
 			query.append(assertion(exprConverter.visit(expr)));
 		}
-		
+
 		// At least one can fail
 		query.append(atLeastOneQueryCanFail(transitionExprs, propertyExprs));
-		
+
 		query.append("(check-sat)\n");
-		
+
 	}
 
 	public String getQuery() {
 		return query.toString();
 	}
-	
+
 	public List<Integer> getPropertiesThatFailed(String queryResult) {
 		List<Integer> res = new ArrayList<Integer>();
-		
+
 		return res;
 	}
-	
+
 	private String atLeastOneQueryCanFail(Collection<Expr> transitionExprs, Collection<Expr> propertyExprs) {
 		String negatedOr = "";
 		for (Expr expr : transitionExprs) {
@@ -71,13 +71,13 @@ public class SMTLIBConverter {
 	private String assertion(String condition) {
 		return String.format("(assert (tobool %s))\n", condition);
 	}
-	
+
 	private String negatedExpr(Expr expr) {
 		return String.format("(bvnot %s)", exprConverter.visit(expr));
 	}
-	
+
 	private String or(String lhs, String rhs) {
 		return String.format("(bvor %s %s)", lhs, rhs);
 	}
-	
+
 }
