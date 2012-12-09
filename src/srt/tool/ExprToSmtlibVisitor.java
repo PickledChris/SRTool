@@ -51,10 +51,10 @@ public class ExprToSmtlibVisitor extends DefaultVisitor {
 				break;
 
 			case BinaryExpr.LAND: // possibly broken
-				operator = "(tobool (bvand %s %s))";
+				operator = "(bvand %s %s)";
 				break;
 			case BinaryExpr.LOR: // possibly broken
-				operator = "(tobool (bvor %s %s))";
+				operator = "(bvor %s %s)";
 				break;
 
 			case BinaryExpr.GEQ:
@@ -93,8 +93,9 @@ public class ExprToSmtlibVisitor extends DefaultVisitor {
         if (i < 0) {
             return String.format("(bvneg (_ bv%d 32))",-i);
         }
-        else
-            return String.format("(_ bv%d 32)",i);
+        else {
+            return String.format("(_ bv%d 32)", i);
+        }
     }
 
 	@Override
@@ -117,7 +118,7 @@ public class ExprToSmtlibVisitor extends DefaultVisitor {
 			operator = "(%s)";
 			break;
 		case UnaryExpr.LNOT: // possibly broken
-			operator = "(not (bvnot %s))";
+			operator = "(tobv32 (not (bvnot %s)))";
 			break;
 		case UnaryExpr.BNOT:
 			operator = "(bvnot %s)";
