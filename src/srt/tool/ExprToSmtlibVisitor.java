@@ -118,7 +118,7 @@ public class ExprToSmtlibVisitor extends DefaultVisitor {
 			operator = "(%s)";
 			break;
 		case UnaryExpr.LNOT: // possibly broken
-			operator = "(tobv32 (not (bvnot %s)))";
+			operator = "(tobv32 (not (tobool %s)))";
 			break;
 		case UnaryExpr.BNOT:
 			operator = "(bvnot %s)";
