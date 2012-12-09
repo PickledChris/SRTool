@@ -13,7 +13,7 @@ public class SMTLIBConverter {
 	private ExprToSmtlibVisitor exprConverter;
 	private StringBuilder query;
 	private int assertionCounter = 0;
-	
+
 	public SMTLIBConverter(Set<String> variableNames, List<Expr> transitionExprs, List<Expr> propertyExprs) {
 
 		if(propertyExprs.size() == 0)
@@ -31,12 +31,12 @@ public class SMTLIBConverter {
 		// TODO: Declare variables, add constraints, add properties to check
 		// here.
 		// Declare each variable as a bit vector
-		
+
 		StringBuilder variables = new StringBuilder();
 		for (String variable : variableNames) {
 			variables.append(String.format("(declare-fun %s () (_ BitVec 32))\n", variable));
 		}
-		
+
 		StringBuilder expressions = new StringBuilder();
 		for (Expr expr : transitionExprs) {
 			expressions.append(assertion(exprConverter.visit(expr)));
@@ -48,16 +48,17 @@ public class SMTLIBConverter {
 			expressions.append(assertion(valueToAssert));
 			//expressions.append(assertion(proposition[1]));
 		}
-		
+
 		query.append(variables);
 		query.append(expressions);
-		
+
 		// At least one can fail
 		query.append(atLeastOneQueryCanFail(transitionExprs, propertyExprs));
 
 		query.append("(check-sat)\n");
 		query.append(String.format("(get-value (%s))", allPropositions()));
-		
+
+        System.out.println(query);
 	}
 
 	public String getQuery() {
@@ -92,7 +93,7 @@ public class SMTLIBConverter {
 	private String or(String lhs, String rhs) {
 		return String.format("(bvor %s %s)", lhs, rhs);
 	}
-	
+
 	private String[] proposition(String assertion) {
 		String variableDeclaration = String.format("(declare-fun prop%s () Bool)\n", assertionCounter);
 		String proposition = String.format("(= prop%s %s)", assertionCounter, assertion);
@@ -100,7 +101,7 @@ public class SMTLIBConverter {
 		String[] returnVars =  {variableDeclaration, proposition};
 		return returnVars;
 	}
-	
+
 	private String allPropositions() {
 		String propositions = "";
 		for (int x = 0; x < assertionCounter; x++){
@@ -108,5 +109,5 @@ public class SMTLIBConverter {
 		}
 		return propositions;
 	}
-	
+
 }

@@ -1,5 +1,6 @@
 queryIn.txt
 queryOut.txt
+queryErr.txt
 *.iml
 .idea/
 out

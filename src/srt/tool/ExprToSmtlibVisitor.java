@@ -9,7 +9,7 @@ import srt.ast.UnaryExpr;
 import srt.ast.visitor.impl.DefaultVisitor;
 
 public class ExprToSmtlibVisitor extends DefaultVisitor {
-	
+
 	public ExprToSmtlibVisitor() {
 		super(false);
 	}
@@ -49,14 +49,14 @@ public class ExprToSmtlibVisitor extends DefaultVisitor {
 			case BinaryExpr.SUBTRACT:
 				operator = "(bvsub %s %s)";
 				break;
-				
+
 			case BinaryExpr.LAND: // possibly broken
 				operator = "(tobool (bvand %s %s))";
 				break;
 			case BinaryExpr.LOR: // possibly broken
 				operator = "(tobool (bvor %s %s))";
 				break;
-			
+
 			case BinaryExpr.GEQ:
 				operator = "(tobv32 (bvsge %s %s)";
 				break;
@@ -79,7 +79,7 @@ public class ExprToSmtlibVisitor extends DefaultVisitor {
 				throw new IllegalArgumentException("Invalid binary operator");
 		}
 		return String.format(operator, visit(expr.getLhs()), visit(expr.getRhs()));
-		
+
 	}
 
 	@Override
@@ -89,8 +89,13 @@ public class ExprToSmtlibVisitor extends DefaultVisitor {
 
 	@Override
 	public String visit(IntLiteral intLiteral) {
-		return (String.format("(_ bv%s 32)",Integer.toString(intLiteral.getValue())));
-	}
+        int i = intLiteral.getValue();
+        if (i < 0) {
+            return String.format("(bvneg (_ bv%d 32))",-i);
+        }
+        else
+            return String.format("(_ bv%d 32)",i);
+    }
 
 	@Override
 	public String visit(TernaryExpr ternaryExpr) {
@@ -117,19 +122,19 @@ public class ExprToSmtlibVisitor extends DefaultVisitor {
 		default:
 			throw new IllegalArgumentException("Invalid binary operator");
 		}
-		
+
 		return String.format(operator, visit(unaryExpr.getOperand()));
 	}
-	
-	
-	/* Overridden just to make return type String. 
+
+
+	/* Overridden just to make return type String.
 	 * @see srt.ast.visitor.DefaultVisitor#visit(srt.ast.Expr)
 	 */
 	@Override
 	public String visit(Expr expr) {
 		return (String) super.visit(expr);
 	}
-	
-	
+
+
 
 }
