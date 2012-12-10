@@ -24,7 +24,7 @@ public class SMTLIBConverter {
 		exprConverter = new ExprToSmtlibVisitor();
 		query = new StringBuilder("(set-logic QF_BV)\n" +
 				"(define-fun tobv32 ((p Bool)) (_ BitVec 32) (ite p (_ bv1 32) (_ bv0 32)))\n" +
-                    "(define-fun tobool ((x (_ BitVec 32))) (Bool) (= x (_ bv1 32)))\n");
+				"(define-fun tobool ((x (_ BitVec 32))) (Bool) (not (= x (_ bv0 32))))\n");
 		// TODO: Define more functions above (for convenience), as needed.
 
 
@@ -39,13 +39,13 @@ public class SMTLIBConverter {
 
 		StringBuilder expressions = new StringBuilder();
 		for (Expr expr : transitionExprs) {
-			expressions.append(assertion(exprConverter.visit(expr)));
+			//expressions.append(assertion(exprConverter.visit(expr)));
 		}
 		for (Expr expr : propertyExprs) {
 			String valueToAssert = exprConverter.visit(expr);
 			String[] proposition = proposition(valueToAssert);
 			variables.append(proposition[0]);
-			expressions.append(assertion(valueToAssert));
+			//expressions.append(assertion(valueToAssert));
 			//expressions.append(assertion(proposition[1]));
 		}
 
@@ -83,15 +83,15 @@ public class SMTLIBConverter {
 	}
 
 	private String assertion(String condition) {
-		return String.format("(assert (tobool %s))\n", condition);
+		return String.format("(assert  %s)\n", condition);
 	}
 
 	private String negatedExpr(Expr expr) {
-		return String.format("(bvnot %s)", exprConverter.visit(expr));
+		return String.format("(not (tobool %s))", exprConverter.visit(expr));
 	}
 
 	private String or(String lhs, String rhs) {
-		return String.format("(bvor %s %s)", lhs, rhs);
+		return String.format("(or %s %s)", lhs, rhs);
 	}
 
 	private String[] proposition(String assertion) {
