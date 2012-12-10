@@ -39,12 +39,12 @@ public class SMTLIBConverter {
 
 		StringBuilder expressions = new StringBuilder();
 		for (Expr expr : transitionExprs) {
-			//expressions.append(assertion(exprConverter.visit(expr)));
+			expressions.append(assertion(toBool(exprConverter.visit(expr))));
 		}
 		for (Expr expr : propertyExprs) {
 			String valueToAssert = exprConverter.visit(expr);
-			String[] proposition = proposition(valueToAssert);
-			variables.append(proposition[0]);
+			//String[] proposition = proposition(valueToAssert);
+			//variables.append(proposition[0]);
 			//expressions.append(assertion(valueToAssert));
 			//expressions.append(assertion(proposition[1]));
 		}
@@ -52,8 +52,8 @@ public class SMTLIBConverter {
 		query.append(variables);
 		query.append(expressions);
 
-		// At least one can fail
-		query.append(atLeastOneQueryCanFail(transitionExprs, propertyExprs));
+		// Verification condition
+		query.append(atLeastOneQueryCanFail(propertyExprs));
 
 		query.append("(check-sat)\n");
 		//query.append(String.format("(get-value (%s))", allPropositions()));
@@ -71,11 +71,8 @@ public class SMTLIBConverter {
 		return res;
 	}
 
-	private String atLeastOneQueryCanFail(Collection<Expr> transitionExprs, Collection<Expr> propertyExprs) {
+	private String atLeastOneQueryCanFail(Collection<Expr> propertyExprs) {
 		String negatedOr = "";
-		for (Expr expr : transitionExprs) {
-			negatedOr = or(negatedOr, negatedExpr(expr));
-		}
 		for (Expr expr : propertyExprs) {
 			negatedOr = or(negatedOr, negatedExpr(expr));
 		}
@@ -84,6 +81,10 @@ public class SMTLIBConverter {
 
 	private String assertion(String condition) {
 		return String.format("(assert %s)\n", condition);
+	}
+	
+	private String toBool(String condition) {
+		return String.format("(tobool %s)", condition);
 	}
 
 	private String negatedExpr(Expr expr) {
