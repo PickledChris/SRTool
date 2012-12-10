@@ -83,7 +83,7 @@ public class SMTLIBConverter {
 	}
 
 	private String assertion(String condition) {
-		return String.format("(assert  %s)\n", condition);
+		return String.format("(assert %s)\n", condition);
 	}
 
 	private String negatedExpr(Expr expr) {
