@@ -57,7 +57,6 @@ public class LoopUnwinderVisitor extends DefaultVisitor {
     private Stmt getVerificationStatement(Expr condition) {
         
         List<Stmt> assumeAssert = new ArrayList<Stmt>();
-        
         if (unwindingAssertions) {
         	assumeAssert.add(new AssertStmt(negate(condition)));
         }

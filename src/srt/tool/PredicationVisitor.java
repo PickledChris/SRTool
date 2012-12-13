@@ -12,6 +12,7 @@ import srt.ast.DeclRef;
 import srt.ast.Expr;
 import srt.ast.HavocStmt;
 import srt.ast.IfStmt;
+import srt.ast.IntLiteral;
 import srt.ast.Stmt;
 import srt.ast.TernaryExpr;
 import srt.ast.UnaryExpr;
@@ -23,14 +24,14 @@ public class PredicationVisitor extends DefaultVisitor {
 		super(true);
 	}
 	
-	private DeclRef predicate = new DeclRef("True");
+	private Expr predicate = new IntLiteral(1);
 	private int predicateCount = 0;
-	private Expr globalPredicateValue = new DeclRef("True");
+	private Expr globalPredicateValue = new IntLiteral(1);
 	
 	@Override
 	public Object visit(IfStmt ifStmt) {
 		
-		DeclRef oldPredicate = predicate;
+		Expr oldPredicate = predicate;
 		DeclRef thenPredicate = getNextPredicate();
 		DeclRef elsePredicate = getNextPredicate();
 		
