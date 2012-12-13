@@ -23,28 +23,27 @@ public class PredicationVisitor extends DefaultVisitor {
 		super(true);
 	}
 	
-	private String predicate = "True";
+	private DeclRef predicate = new DeclRef("True");
 	private int predicateCount = 0;
-	private String globalPredicate = "$G";
 	private Expr globalPredicateValue = new DeclRef("True");
 	
 	@Override
 	public Object visit(IfStmt ifStmt) {
 		
-		String oldPredicate = predicate;
+		DeclRef oldPredicate = predicate;
 		DeclRef thenPredicate = getNextPredicate();
 		DeclRef elsePredicate = getNextPredicate();
 		
 		AssignStmt thenCondition = new AssignStmt(thenPredicate, 
-				new BinaryExpr(BinaryExpr.LAND, new DeclRef(predicate), ifStmt.getCondition()));
+				new BinaryExpr(BinaryExpr.LAND, predicate, ifStmt.getCondition()));
 		AssignStmt elseCondition = new AssignStmt(elsePredicate, 
-				new BinaryExpr(BinaryExpr.LAND, new DeclRef(predicate), new UnaryExpr(UnaryExpr.LNOT, ifStmt.getCondition())));
+				new BinaryExpr(BinaryExpr.LAND, predicate, new UnaryExpr(UnaryExpr.LNOT, ifStmt.getCondition())));
 		
 		
-		predicate = thenPredicate.getName();
+		predicate = thenPredicate;
 		Stmt thenStatement = (Stmt) visit(ifStmt.getThenStmt());
 		
-		predicate = elsePredicate.getName();
+		predicate = elsePredicate;
 		Stmt elseStatement = (Stmt) visit(ifStmt.getElseStmt());
 		
 		predicate = oldPredicate;
@@ -61,14 +60,14 @@ public class PredicationVisitor extends DefaultVisitor {
 	public Object visit(AssertStmt assertStmt) {
 		
 		// assert(expr) becomes assert((G && P)  => expr)
-		AssertStmt newAssert = new AssertStmt(implies(andGlobal(new DeclRef(predicate)), assertStmt.getCondition()), assertStmt);
+		AssertStmt newAssert = new AssertStmt(implies(andGlobal(predicate), assertStmt.getCondition()), assertStmt);
 		return newAssert;
 	}
 
 	@Override
 	public Object visit(AssignStmt assignment) {
 		// x = E becomes x = ((G && P)  ? E : x)
-		TernaryExpr ternaryExpr = new TernaryExpr(andGlobal(new DeclRef(predicate)), assignment.getRhs(), assignment.getLhs());
+		TernaryExpr ternaryExpr = new TernaryExpr(andGlobal(predicate), assignment.getRhs(), assignment.getLhs());
 		AssignStmt newAssign = new AssignStmt(assignment.getLhs(), ternaryExpr , assignment);
 		return newAssign;
 	}
@@ -76,9 +75,8 @@ public class PredicationVisitor extends DefaultVisitor {
 	@Override
 	public Object visit(AssumeStmt assumeStmt) {
 		// assume(expr) becomes A = (G && P ) => expr
-
 		DeclRef newPredicate = getNextPredicate();
-		Expr implies =  implies(andGlobal(new DeclRef(predicate)), assumeStmt.getCondition());
+		Expr implies =  implies(andGlobal(predicate), assumeStmt.getCondition());
 		AssignStmt newAssign = new AssignStmt(newPredicate, implies, assumeStmt);
 		//G = G && A
 		globalPredicateValue = new BinaryExpr(BinaryExpr.LAND, globalPredicateValue, newPredicate);
@@ -88,7 +86,7 @@ public class PredicationVisitor extends DefaultVisitor {
 
 	@Override
 	public Object visit(HavocStmt havocStmt) {
-		TernaryExpr ternaryExpr = new TernaryExpr(andGlobal(new DeclRef(predicate)), getNextPredicate(), havocStmt.getVariable());
+		TernaryExpr ternaryExpr = new TernaryExpr(andGlobal(predicate), getNextPredicate(), havocStmt.getVariable());
 		AssignStmt newAssign = new AssignStmt(havocStmt.getVariable(), ternaryExpr, havocStmt);
 		return newAssign;
 	}
@@ -103,7 +101,7 @@ public class PredicationVisitor extends DefaultVisitor {
 	}
 	
 	private Expr andGlobal(Expr expr) {
-		return new BinaryExpr(BinaryExpr.LAND, new DeclRef(globalPredicate), expr);
+		return new BinaryExpr(BinaryExpr.LAND, globalPredicateValue, expr);
 	}
 
 }

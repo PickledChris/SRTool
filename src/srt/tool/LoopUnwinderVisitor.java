@@ -45,7 +45,7 @@ public class LoopUnwinderVisitor extends DefaultVisitor {
         
         // Use body + the decremented while loop to make up the next body
         List<Stmt> unrolledIfBody = new ArrayList<Stmt>();
-        unrolledIfBody.add(whileStmt.getBody());
+        unrolledIfBody.addAll(((BlockStmt) whileStmt.getBody()).getStmtList().getStatements());
     	unrolledIfBody.add((Stmt) visit(whileStmt));
 
         return new IfStmt(whileCondition, 
