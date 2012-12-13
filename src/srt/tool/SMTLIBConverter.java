@@ -41,11 +41,11 @@ public class SMTLIBConverter {
 		for (Expr expr : transitionExprs) {
 			expressions.append(assertion(toBool(exprConverter.visit(expr))));
 		}
+		
 		for (Expr expr : propertyExprs) {
-			String valueToAssert = exprConverter.visit(expr);
-			//String[] proposition = proposition(valueToAssert);
+			String assertionExpression = exprConverter.visit(expr);
+			//String[] proposition = proposition(assertionExpression);
 			//variables.append(proposition[0]);
-			//expressions.append(assertion(valueToAssert));
 			//expressions.append(assertion(proposition[1]));
 		}
 
@@ -99,8 +99,7 @@ public class SMTLIBConverter {
 		String variableDeclaration = String.format("(declare-fun prop%s () Bool)\n", assertionCounter);
 		String proposition = String.format("(= prop%s %s)", assertionCounter, assertion);
 		assertionCounter++;
-		String[] returnVars =  {variableDeclaration, proposition};
-		return returnVars;
+		return new String[]{variableDeclaration, proposition};
 	}
 
 	private String allPropositions() {
