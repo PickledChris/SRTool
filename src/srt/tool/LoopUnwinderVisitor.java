@@ -23,6 +23,11 @@ public class LoopUnwinderVisitor extends DefaultVisitor {
 
         IntLiteral bound = whileStmt.getBound();
 
+        // If the bound is null, we don't want to unwind the loop?
+        if (bound == null) {
+            return super.visit(whileStmt);
+        }
+
         // unroll once.
         Expr condition = whileStmt.getCondition();
         Stmt body = whileStmt.getBody();
