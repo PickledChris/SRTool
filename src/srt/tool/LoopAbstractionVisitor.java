@@ -15,66 +15,65 @@ public class LoopAbstractionVisitor extends DefaultVisitor {
 	@Override
 	public Object visit(WhileStmt whileStmt) {
 
-        List<Expr> exprs = whileStmt.getInvariantList().getExprs();
-        List<Stmt> stmts = new LinkedList<Stmt>();
+        final List<Expr> exprs = whileStmt.getInvariantList().getExprs();
+        final List<Stmt> stmts = new LinkedList<Stmt>();
 
-        if (exprs.size() > 0) {
+        if (!exprs.isEmpty()) {
 
-            Expr invariant = getInvariantExpr(exprs);
+            final Expr invariant = getInvariantExpr(exprs);
 
             // assert invariant
-            Stmt entry = new AssertStmt(invariant);
+            final Stmt entry = new AssertStmt(invariant);
 
             // havoc invariant
-            Stmt havoc = new BlockStmt(getHavocStatements(exprs));
+            final Stmt havoc = new BlockStmt(getHavocStatements(exprs));
 
             // assume invariant
-            Stmt assume = new AssumeStmt(invariant);
+            final Stmt assume = new AssumeStmt(invariant);
             stmts.add(entry); stmts.add(havoc); stmts.add(assume);
 
 
             stmts.add(ifBlockBuilder(whileStmt, invariant));
 
-            BlockStmt block = new BlockStmt(stmts);
+            final BlockStmt block = new BlockStmt(stmts);
 
-            return super.visit(block);
+            return visit(block);
 
         } else {
             return super.visit(whileStmt);
         }
 	}
 
-    private Expr getInvariantExpr(List<Expr> exprs) {
+    private static Expr getInvariantExpr(final List<Expr> exprs) {
         // expr && expr = expr, just vaguely more inefficient
 
-        if (exprs.size() == 1)
+        if (1 == exprs.size()) {
             return exprs.get(0);
-
-        else {
+        } else {
             Expr invariant = exprs.get(0);
 
             for(int i = 1; i < exprs.size(); i++) {
-                Expr e = exprs.get(i);
-                invariant = new BinaryExpr(BinaryExpr.LAND,invariant,e);
+                invariant = new BinaryExpr(BinaryExpr.LAND,invariant,exprs.get(i));
             }
             return invariant;
         }
     }
 
-    private List<Stmt> getHavocStatements(List<Expr> invariant) {
-        List<Stmt> list = new LinkedList<Stmt>();
+    private static List<Stmt> getHavocStatements(final Iterable<Expr> invariant) {
+        final List<Stmt> list = new LinkedList<Stmt>();
 
-        for (Expr e: invariant) {
-            if (e instanceof DeclRef)
+        for (final Expr e: invariant) {
+            if (e instanceof DeclRef) {
                 list.add(new HavocStmt((DeclRef) e));
+            }
         }
         return list;
     }
 
 
-    private Stmt ifBlockBuilder(WhileStmt whileStmt, Expr invariant) {
+    private static Stmt ifBlockBuilder(final WhileStmt whileStmt, final Expr invariant) {
         // Inside block now
-        List<Stmt> block = new LinkedList<Stmt>();
+        final List<Stmt> block = new LinkedList<Stmt>();
 
         block.add(whileStmt.getBody());
 
