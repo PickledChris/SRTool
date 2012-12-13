@@ -61,7 +61,7 @@ public class LoopUnwinderVisitor extends DefaultVisitor {
         if (unwindingAssertions) {
         	assumeAssert.add(new AssertStmt(negate(condition)));
         }
-        assumeAssert.add(new AssertStmt(negate(condition)));
+        assumeAssert.add(new AssumeStmt(negate(condition)));
         
         return new BlockStmt(new StmtList(assumeAssert));
     }
