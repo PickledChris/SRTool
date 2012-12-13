@@ -31,7 +31,7 @@ public class SSAVisitor extends DefaultVisitor {
 		if (index.containsKey(name)){
 			index.put(name, (index.get(name) + 1));
 		} else {
-			index.put(name, 1);
+			index.put(name, 0);
 		}
 	}
 	
