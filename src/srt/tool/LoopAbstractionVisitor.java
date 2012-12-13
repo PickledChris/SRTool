@@ -87,6 +87,6 @@ public class LoopAbstractionVisitor extends DefaultVisitor {
         // if statement
         return new IfStmt(whileStmt.getCondition(),
                 new BlockStmt(block),
-                null);
+                new BlockStmt(new LinkedList<Stmt>()));
     }
 }
