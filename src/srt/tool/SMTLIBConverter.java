@@ -16,7 +16,7 @@ public class SMTLIBConverter {
 
 	public SMTLIBConverter(Set<String> variableNames, List<Expr> transitionExprs, List<Expr> propertyExprs) {
 
-		if(propertyExprs.size() == 0)
+		if(0 == propertyExprs.size())
 		{
 			throw new IllegalArgumentException("No assertions.");
 		}
@@ -41,7 +41,7 @@ public class SMTLIBConverter {
 		for (Expr expr : transitionExprs) {
 			expressions.append(assertion(toBool(exprConverter.visit(expr))));
 		}
-		
+
 		for (Expr expr : propertyExprs) {
 			String assertionExpression = exprConverter.visit(expr);
 			//String[] proposition = proposition(assertionExpression);
@@ -66,9 +66,7 @@ public class SMTLIBConverter {
 	}
 
 	public List<Integer> getPropertiesThatFailed(String queryResult) {
-		List<Integer> res = new ArrayList<Integer>();
-
-		return res;
+		return new ArrayList<Integer>();
 	}
 
 	private String atLeastOneQueryCanFail(Collection<Expr> propertyExprs) {
@@ -82,7 +80,7 @@ public class SMTLIBConverter {
 	private String assertion(String condition) {
 		return String.format("(assert %s)\n", condition);
 	}
-	
+
 	private String toBool(String condition) {
 		return String.format("(tobool %s)", condition);
 	}
