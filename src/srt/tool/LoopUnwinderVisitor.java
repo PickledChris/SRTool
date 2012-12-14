@@ -22,50 +22,46 @@ public class LoopUnwinderVisitor extends DefaultVisitor {
 	public Object visit(WhileStmt whileStmt) {
 
         int bound;
-        // If the bound is null, use the default
         if (whileStmt.getBound() == null) {
-            bound = defaultUnwindBound;
+        	bound = defaultUnwindBound;
         } else {
         	bound = whileStmt.getBound().getValue();
         }
-        
-        Expr whileCondition = whileStmt.getCondition();
 
-        Stmt verificationStatement = getVerificationStatement(whileCondition);
-        
-        // If bound is 0, just replace the whole thing with the possible assert + assume
-        if (bound == 0 ){
-        	return verificationStatement;
+        // unroll once.
+        Expr condition = whileStmt.getCondition();
+        Stmt body = whileStmt.getBody();
+
+        Stmt verificationStatement = whileVerificationStmt(condition);
+        // start for at 1 because one unroll already done
+        for(int i = 0; i < bound; i++) {
+
+            // use body + the ifStatement generated previously to make up the next body
+            List<Stmt> unrolledIfBody = new ArrayList<Stmt>();
+            unrolledIfBody.add(body);
+            unrolledIfBody.add(verificationStatement);
+            StmtList newIfBody = new StmtList(unrolledIfBody);
+
+            verificationStatement = new IfStmt(condition, new BlockStmt(newIfBody), new EmptyStmt());
+
+
         }
-        // Else unroll it once and recurse on the decremented while
-    
-        // Decremented while loop
-        whileStmt = new WhileStmt(whileCondition, new IntLiteral(bound - 1),
-        		whileStmt.getInvariantList(), whileStmt.getBody());
-        
-        // Use body + the decremented while loop to make up the next body
-        List<Stmt> unrolledIfBody = new ArrayList<Stmt>();
-        unrolledIfBody.addAll(((BlockStmt) whileStmt.getBody()).getStmtList().getStatements());
-    	unrolledIfBody.add((Stmt) visit(whileStmt));
 
-        return new IfStmt(whileCondition, 
-        		new BlockStmt(new StmtList(unrolledIfBody)), new EmptyStmt());
+		return super.visit(verificationStatement);
 	}
 
-    // Creates the assert(!c) and assume(!c) statements for the end of the loop body
-    // Based on whether or not we're using sound or unsound loop unwinding
-    private Stmt getVerificationStatement(Expr condition) {
-        
+    private Stmt whileVerificationStmt(Expr condition) {
         List<Stmt> assumeAssert = new ArrayList<Stmt>();
         if (unwindingAssertions) {
         	assumeAssert.add(new AssertStmt(negate(condition)));
         }
         assumeAssert.add(new AssumeStmt(negate(condition)));
-        
-        return new BlockStmt(new StmtList(assumeAssert));
+        StmtList list = new StmtList(assumeAssert);
+        return new BlockStmt(list);
     }
 
-	private Expr negate(Expr expr) {
-        return new UnaryExpr(UnaryExpr.LNOT, expr); 
+    private Expr negate(Expr expr) {
+        Expr expression = new UnaryExpr(UnaryExpr.LNOT, expr);
+        return expr;  //To change body of created methods use File | Settings | File Templates.
     }
 }
