@@ -30,17 +30,19 @@ public class AllSRTTests {
 		clargs.unwindingAssertions = false;
 		tests.addTest(getTestsInDir("testunsound", clargs));
 
-		// loop abstraction tests
+        //Shared tests
+        tests.addTest(getTestsInDir("test_shared", clargs));
+
+        // loop abstraction tests
 		// (comment out these lines while testing the bounded model checker)
 		clargs = new CLArgs();
 		clargs.abstractLoops = true;
 		tests.addTest(getTestsInDir("testloopabs", clargs));
 
+        //Shared tests
+        tests.addTest(getTestsInDir("test_shared", clargs));
 
-		//Shared tests
-		tests.addTest(getTestsInDir("test_shared", clargs));
-
-		return tests;
+        return tests;
 	}
 
 	private static Test getTestsInDir(String dir, CLArgs clargs) {
