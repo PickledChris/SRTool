@@ -25,25 +25,23 @@ public class SMTLIBConverter {
 		query = new StringBuilder("(set-logic QF_BV)\n" +
 				"(define-fun tobv32 ((p Bool)) (_ BitVec 32) (ite p (_ bv1 32) (_ bv0 32)))\n" +
 				"(define-fun tobool ((x (_ BitVec 32))) (Bool) (not (= x (_ bv0 32))))\n");
-		// TODO: Define more functions above (for convenience), as needed.
 
-
-		// TODO: Declare variables, add constraints, add properties to check
-		// here.
 		// Declare each variable as a bit vector
-
 		StringBuilder variables = new StringBuilder();
 		for (String variable : variableNames) {
 			variables.append(String.format("(declare-fun %s () (_ BitVec 32))\n", variable));
 		}
 
+		// Declare program constraints
 		StringBuilder expressions = new StringBuilder();
 		for (Expr expr : transitionExprs) {
 			expressions.append(assertion(toBool(exprConverter.visit(expr))));
 		}
 
+		
 		for (Expr expr : propertyExprs) {
-			String assertionExpression = exprConverter.visit(expr);
+			exprConverter.visit(expr);
+			// Dead code from early attempt at assertion reporting
 			//String[] proposition = proposition(assertionExpression);
 			//variables.append(proposition[0]);
 			//expressions.append(assertion(proposition[1]));
@@ -57,8 +55,8 @@ public class SMTLIBConverter {
 
 		query.append("(check-sat)\n");
 		//query.append(String.format("(get-value (%s))", allPropositions()));
-
-        System.out.println(query);
+		
+        //System.out.println(query); //Uncomment for debugging.
 	}
 
 	public String getQuery() {
@@ -93,6 +91,8 @@ public class SMTLIBConverter {
 		return String.format("(or %s %s)", lhs, rhs);
 	}
 
+	/*
+	 * Dead code from early attempt at assertion 
 	private String[] proposition(String assertion) {
 		String variableDeclaration = String.format("(declare-fun prop%s () Bool)\n", assertionCounter);
 		String proposition = String.format("(= prop%s %s)", assertionCounter, assertion);
@@ -107,5 +107,5 @@ public class SMTLIBConverter {
 		}
 		return propositions;
 	}
-
+	*/
 }

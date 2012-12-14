@@ -4,10 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import srt.ast.AssertStmt;
-import srt.ast.AssignStmt;
 import srt.ast.AssumeStmt;
 import srt.ast.BlockStmt;
-import srt.ast.DeclRef;
 import srt.ast.EmptyStmt;
 import srt.ast.Expr;
 import srt.ast.IfStmt;
@@ -33,8 +31,10 @@ public class LoopUnwinderVisitor extends DefaultVisitor {
 	@Override
 	public Object visit(WhileStmt whileStmt) {
 		
+		// List that contains preconditions and if statement
 		List<Stmt> stmtList = new ArrayList<Stmt>();
 		
+		// Assert the preconditions
 		for (Expr expression : whileStmt.getInvariantList().getExprs()) {
 			stmtList.add(new AssertStmt(expression));
 		}
@@ -46,10 +46,12 @@ public class LoopUnwinderVisitor extends DefaultVisitor {
 			bound = whileStmt.getBound().getValue();
 		}
 		
+		// If we aren't unrolling any further, replace the while loop with another 
 		if (bound == 0) {
-			return getUnwindingAssertionAssumption(whileStmt.getCondition());
+			return getVerificationCondition(whileStmt.getCondition());
 		}
 		
+		// Otherwise, unroll once and add in a decremented while loop.
 		WhileStmt newWhileStmt = new WhileStmt(whileStmt.getCondition(), new IntLiteral(bound - 1), whileStmt.getInvariantList(), whileStmt.getBody());
 		
 		List<Stmt> list = new ArrayList<Stmt>();
@@ -61,7 +63,8 @@ public class LoopUnwinderVisitor extends DefaultVisitor {
 		return super.visit(new BlockStmt(new StmtList(stmtList)));
 	}
 
-	private Stmt getUnwindingAssertionAssumption(Expr condition) {
+	// Creates the assume and assert statements, based on the soundness parameter passed in.
+	private Stmt getVerificationCondition(Expr condition) {
 		List<Stmt> list = new ArrayList<Stmt>();
 		if (unwindingAssertions) {
 			list.add(new AssertStmt(negated(condition)));

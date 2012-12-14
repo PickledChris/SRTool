@@ -30,20 +30,24 @@ public class PredicationVisitor extends DefaultVisitor {
 
 	@Override
 	public Object visit(IfStmt ifStmt) {
-
+		
+		// Store old  as it might not have been just 'true'
 		Expr oldPredicate = this.predicate;
 		DeclRef thenPredicate = getNextPredicate();
 		DeclRef elsePredicate = getNextPredicate();
 
+		//Q = P && E;
 		AssignStmt thenCondition = new AssignStmt(thenPredicate,
 				new BinaryExpr(BinaryExpr.LAND, this.predicate, ifStmt.getCondition()));
+		//R = P && !E;
 		AssignStmt elseCondition = new AssignStmt(elsePredicate,
 				new BinaryExpr(BinaryExpr.LAND, this.predicate, new UnaryExpr(UnaryExpr.LNOT, ifStmt.getCondition())));
 
-
+		// Pred(S, Q);
         this.predicate = thenPredicate;
 		Stmt thenStatement = (Stmt) visit(ifStmt.getThenStmt());
 
+		// Pred(T, R);
         this.predicate = elsePredicate;
 		Stmt elseStatement = (Stmt) visit(ifStmt.getElseStmt());
 
@@ -59,7 +63,6 @@ public class PredicationVisitor extends DefaultVisitor {
 
 	@Override
 	public Object visit(AssertStmt assertStmt) {
-
 		// assert(expr) becomes assert((G && P)  => expr)
         return new AssertStmt(implies(andGlobal(this.predicate), assertStmt.getCondition()), assertStmt);
 	}
@@ -79,25 +82,28 @@ public class PredicationVisitor extends DefaultVisitor {
 		AssignStmt newAssign = new AssignStmt(newPredicate, implies, assumeStmt);
 		//G = G && A
         this.globalPredicateValue = new BinaryExpr(BinaryExpr.LAND, this.globalPredicateValue, newPredicate);
-
 		return newAssign;
 	}
 
 	@Override
 	public Object visit(HavocStmt havocStmt) {
+		// havoc (x) becomes x = ((G && P) ? h : x)
 		TernaryExpr ternaryExpr = new TernaryExpr(andGlobal(this.predicate), getNextPredicate(), havocStmt.getVariable());
 		return new AssignStmt(havocStmt.getVariable(), ternaryExpr, havocStmt);
 	}
 
+	// Generates a fresh predicate
 	private DeclRef getNextPredicate() {
         this.predicateCount++;
 		return new DeclRef(String.format("$P%s", this.predicateCount));
 	}
 
+	// Implies = (Not A OR B)
 	private static Expr implies(Expr lhs, Expr rhs) {
 		return new BinaryExpr(BinaryExpr.LOR, new UnaryExpr(UnaryExpr.LNOT, lhs) ,rhs);
 	}
 
+	// AND with the global predicate
 	private Expr andGlobal(Expr expr) {
 		return new BinaryExpr(BinaryExpr.LAND, this.globalPredicateValue, expr);
 	}

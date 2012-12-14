@@ -17,6 +17,7 @@ public class SSAVisitor extends DefaultVisitor {
 		super(true);
 	}
 	
+	// Gets the current SSA value
 	private String getSSAName(String name) {
 		String newName;
 		if (index.containsKey(name)){
@@ -27,6 +28,7 @@ public class SSAVisitor extends DefaultVisitor {
 		return newName;
 	}
 	
+	// Increments the stored count for that value
 	private void incrementSSAIndex(String name) {
 		if (index.containsKey(name)){
 			index.put(name, (index.get(name) + 1));
@@ -35,11 +37,14 @@ public class SSAVisitor extends DefaultVisitor {
 		}
 	}
 	
+	// Just replace with the initial reference
 	@Override
 	public Object visit(Decl decl) {
 		return new Decl(getSSAName(decl.getName()), decl.getType(), decl);
 	}
 	
+	// Replace with existing ref unless within an assignment lhs
+	// In which case increment and then replace
 	@Override
 	public Object visit(DeclRef declRef) {
 		if (beingAssignedTo) {
@@ -55,6 +60,7 @@ public class SSAVisitor extends DefaultVisitor {
 		
 		Expr newRhs = (Expr) visit(rhs);
 		
+		// Increment and modify lhs
 		beingAssignedTo = true;
 		DeclRef newLhs = (DeclRef) visit(lhs);
 		beingAssignedTo = false;
