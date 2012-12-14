@@ -1,10 +1,22 @@
 package srt.tool;
 
-import srt.ast.*;
-import srt.ast.visitor.impl.DefaultVisitor;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import srt.ast.AssertStmt;
+import srt.ast.AssignStmt;
+import srt.ast.AssumeStmt;
+import srt.ast.BlockStmt;
+import srt.ast.DeclRef;
+import srt.ast.EmptyStmt;
+import srt.ast.Expr;
+import srt.ast.IfStmt;
+import srt.ast.IntLiteral;
+import srt.ast.Stmt;
+import srt.ast.StmtList;
+import srt.ast.UnaryExpr;
+import srt.ast.WhileStmt;
+import srt.ast.visitor.impl.DefaultVisitor;
 
 public class LoopUnwinderVisitor extends DefaultVisitor {
 
@@ -20,48 +32,46 @@ public class LoopUnwinderVisitor extends DefaultVisitor {
 
 	@Override
 	public Object visit(WhileStmt whileStmt) {
-
-        int bound;
-        if (whileStmt.getBound() == null) {
-        	bound = defaultUnwindBound;
-        } else {
-        	bound = whileStmt.getBound().getValue();
-        }
-
-        // unroll once.
-        Expr condition = whileStmt.getCondition();
-        Stmt body = whileStmt.getBody();
-
-        Stmt verificationStatement = whileVerificationStmt(condition);
-        // start for at 1 because one unroll already done
-        for(int i = 0; i < bound; i++) {
-
-            // use body + the ifStatement generated previously to make up the next body
-            List<Stmt> unrolledIfBody = new ArrayList<Stmt>();
-            unrolledIfBody.add(body);
-            unrolledIfBody.add(verificationStatement);
-            StmtList newIfBody = new StmtList(unrolledIfBody);
-
-            verificationStatement = new IfStmt(condition, new BlockStmt(newIfBody), new EmptyStmt());
-
-
-        }
-
-		return super.visit(verificationStatement);
+		
+		List<Stmt> stmtList = new ArrayList<Stmt>();
+		
+		for (Expr expression : whileStmt.getInvariantList().getExprs()) {
+			stmtList.add(new AssertStmt(expression));
+		}
+		
+		int bound;
+		if (whileStmt.getBound() == null) {
+			bound = defaultUnwindBound;
+		} else {
+			bound = whileStmt.getBound().getValue();
+		}
+		
+		if (bound == 0) {
+			return getUnwindingAssertionAssumption(whileStmt.getCondition());
+		}
+		
+		WhileStmt newWhileStmt = new WhileStmt(whileStmt.getCondition(), new IntLiteral(bound - 1), whileStmt.getInvariantList(), whileStmt.getBody());
+		
+		List<Stmt> list = new ArrayList<Stmt>();
+		list.add(whileStmt.getBody());
+		list.add(newWhileStmt);
+		IfStmt ifStatement = new IfStmt(whileStmt.getCondition(), new BlockStmt(new StmtList(list)) , new EmptyStmt());
+		stmtList.add(ifStatement);
+		
+		return super.visit(new BlockStmt(new StmtList(stmtList)));
 	}
 
-    private Stmt whileVerificationStmt(Expr condition) {
-        List<Stmt> assumeAssert = new ArrayList<Stmt>();
-        if (unwindingAssertions) {
-        	assumeAssert.add(new AssertStmt(negate(condition)));
-        }
-        assumeAssert.add(new AssumeStmt(negate(condition)));
-        StmtList list = new StmtList(assumeAssert);
-        return new BlockStmt(list);
-    }
+	private Stmt getUnwindingAssertionAssumption(Expr condition) {
+		List<Stmt> list = new ArrayList<Stmt>();
+		if (unwindingAssertions) {
+			list.add(new AssertStmt(negated(condition)));
+		}
+		list.add(new AssumeStmt(negated(condition)));
+		return new BlockStmt(new StmtList(list));
+	}
 
-    private Expr negate(Expr expr) {
-        Expr expression = new UnaryExpr(UnaryExpr.LNOT, expr);
-        return expr;  //To change body of created methods use File | Settings | File Templates.
-    }
+	private Expr negated(Expr condition) {
+		return new UnaryExpr(UnaryExpr.LNOT, condition);
+	}
+
 }
